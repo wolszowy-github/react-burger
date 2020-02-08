@@ -1,0 +1,52 @@
+.Menu {
+  @media (min-width: 499px) {
+    display: none;
+  }
+
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  justify-content: center;
+  cursor: pointer;
+
+  .Line {
+    position: relative;
+    
+    &,
+    &:before,
+    &:after {
+      border-radius: 30%;
+      content: '';
+      height: 4px;
+      width: 30px;
+      background-color: #fff;
+      left: 0;
+      transition: transform .2s ease-out;
+    }
+    
+    &:before,
+    &:after {       
+      position: absolute;
+    }
+
+    &:before {
+      transform: translateY(8px)
+    }
+
+    &:after {
+      transform: translateY(-8px)
+    }
+  }
+
+  &:hover {
+    .Line {
+      &:after {
+        transform: translateY(10px)
+      }
+
+      &:before {
+        transform: translateY(-10px)
+      }
+    }
+  }
+}
