@@ -22,7 +22,7 @@ class Orders extends Component {
           id: key
         })
       }
-
+      
       this.setState({
         orders: fetchedData
       }, this.setState({loading: false}))
@@ -42,8 +42,9 @@ class Orders extends Component {
     if (this.state.loading) {
       content = <Spinner />
     } else {
+      
     content = this.state.orders
-      .map(order => (
+      .map(order => (      
         <Order 
           key={order.id} 
           ingredients={order.ingredients}
