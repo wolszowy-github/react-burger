@@ -15,7 +15,6 @@ const PRICES = {
 }
 
 class BurgerBuilder extends Component {
-
   state = {
     ingredients: null,
     purchasable: false,
@@ -25,15 +24,15 @@ class BurgerBuilder extends Component {
   }
 
   setBurgerIngredientsAsParams = () => {
-    let burgerParams = new URLSearchParams()
-    for (let key in this.state.ingredients) {
+    const burgerParams = new URLSearchParams()
+    for (const key in this.state.ingredients) {
       burgerParams.set(key, this.state.ingredients[key])
     } 
     return burgerParams
   }
   
   setTotalPriceAsQueryParam = () => {
-    let param = new URLSearchParams()
+    const param = new URLSearchParams()
     param.set('totalPrice', this.state.totalPrice)
     return param
   }
@@ -46,17 +45,12 @@ class BurgerBuilder extends Component {
   }
 
   updatePurchaseState (ingrCpy) {
+    const isPurchaseble = Object.values(ingrCpy)
+    .find(value => value !== 0)
 
-    let found = Object.keys(ingrCpy).find(ingr => ingrCpy[ingr] !== 0)
-    if(found) {
-      this.setState({
-        purchasable: true
-      })
-    } else {
-      this.setState({
-        purchasable: false
-      })
-    }
+    this.setState({
+      purchasable: !!isPurchaseble,
+    });
   }
 
   purchaseHandler = () => {
@@ -75,68 +69,55 @@ class BurgerBuilder extends Component {
   }
 
   addIngredientHandler = (ingrType) => {
-    let ingredientsCpy = {...this.state.ingredients} 
+    const ingredientsCpy = {...this.state.ingredients} 
     ingredientsCpy[ingrType]++
 
-    let priceCpy = this.state.totalPrice
-
-    let newPrice = Math.round((priceCpy + PRICES[ingrType]) * 100) / 100
-
-    
     this.setState({
       ingredients: ingredientsCpy,
-      totalPrice: newPrice
+      totalPrice: Math.round((this.state.totalPrice + PRICES[ingrType]) * 100) / 100
     })
 
     this.updatePurchaseState(ingredientsCpy)
-
   }
 
   deleteIngredientHandler = (ingrType) => {
-
-    let ingredientsCpy = {...this.state.ingredients} 
-    let priceCpy = this.state.totalPrice
-
+    const ingredientsCpy = {...this.state.ingredients} 
     let newPrice = null
-    if (ingredientsCpy[ingrType] !== 0) {
-      ingredientsCpy[ingrType]--
-      newPrice = Math.round((priceCpy - PRICES[ingrType]) * 100) / 100
+    let setValues = {
+      ingredients: ingredientsCpy
     }
 
-    this.setState(() => {
-      if (newPrice !== null) {
-        return {
-          ingredients: ingredientsCpy,
-          totalPrice: newPrice
-        }
-      } else {
-        return {
-          ingredients: ingredientsCpy,
-        }
-      }
-    })
+    if (ingredientsCpy[ingrType] !== 0) {
+      ingredientsCpy[ingrType]--
+      newPrice = Math.round((this.state.totalPrice - PRICES[ingrType]) * 100) / 100
+    }
+
+    if (newPrice !== null) {
+      setValues.totalPrice = newPrice
+    }
+
+    this.setState(() => setValues)
     this.updatePurchaseState(ingredientsCpy)
   }
 
-  render () {
-    let modalContent = <OrderSummary
-            totalPrice={this.state.totalPrice} 
-            ingredients={this.state.ingredients}
-            modalClose={this.purchaseOffHandler}
-            continuePurchase={this.purchaseContinueHandler}
-          />
+  renderOrderSummary() {
+    return this.state.loading || !this.state.ingredients ? (
+      <Spinner />
+    ) : (
+      <OrderSummary
+        totalPrice={this.state.totalPrice}
+        ingredients={this.state.ingredients}
+        modalClose={this.purchaseOffHandler}
+        continuePurchase={this.purchaseContinueHandler}
+      />
+    );
+  }
 
-     if(this.state.loading || !this.state.ingredients) {
-       modalContent = <Spinner />
-     }   
-     
-     let burger = null
-
-     if(this.state.ingredients === null) {
-       burger = <Spinner />
-     } else {
-       burger = (
-         <Fragment>
+  renderBurger() {
+    return this.state.ingredients === null ? (
+      <Spinner />
+    ): (
+      <Fragment>
            <Burger ingredients={this.state.ingredients}></Burger>
            <BuildControls 
              ingredients={this.state.ingredients}
@@ -147,18 +128,19 @@ class BurgerBuilder extends Component {
              purchaseSwitch={this.purchaseHandler} 
              />
         </Fragment>
-       )
-     }
+    )
+  }
 
+  render () {
     return (
       <Fragment>
-        {burger}
+        {this.renderBurger()}
         <Modal 
           modalState={this.state.purchasing}
           modalClose={this.purchaseOffHandler}
           loading={this.state.loading}
         >
-         {modalContent}
+         {this.renderOrderSummary()}
         </Modal>
       </Fragment>
     )
